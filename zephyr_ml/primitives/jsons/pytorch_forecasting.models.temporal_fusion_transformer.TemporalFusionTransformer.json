@@ -12,80 +12,78 @@
     "modalities": [],
     "primitive": "pytorch_forecasting.models.temporal_fusion_transformer.TemporalFusionTransformer",
     "fit": {
-        "method": "fit",
+        "method": "optimize_hyperparameters",
         "args": [
             {
-                "name": "X",
-                "type": "ndarray"
+                "name": "train_dataloaders",
+                "type": "DataLoader"
             },
             {
-                "name": "y",
-                "type": "array"
+                "name": "val_dataloaders",
+                "type": "DataLoader"
+            },
+            {
+                "name": "model_path",
+                "type": "str"
             }
         ]
     },
     "produce": {
-        "method": "predict",
+        "method": "from_dataset",
         "args": [
             {
-                "name": "X",
-                "keyword": "data",
-                "type": "ndarray"
+                "name": "dataset",
+                "type": "TimeSeriesDataSet"
+            },
+            {
+                "name": "allowed_encoder_known_variable_names",
+                "type": "array"
+            },
+            {
+                "name": "kwargs"
             }
         ],
         "output": [
             {
-                "name": "y",
-                "type": "array"
+                "name": "model",
+                "type": "TemporalFusionTransformer"
             }
         ]
     },
     "hyperparameters": {
         "fixed": {
-            "n_jobs": {
+            "hidden_size": {
                 "type": "int",
-                "default": -1
+                "default": 256,
+                "range": [
+                    8,
+                    512
+                ]
+            },
+            "lstm_layers": {
+                "type": "int",
+                "default": 2
+            },
+            "output_size": {
+                "type": "int",
+                "default": 1
             }
         },
         "tunable": {
-            "n_estimators": {
-                "type": "int",
-                "default": 100,
+            "dropout": {
+                "type": "float",
+                "default": 0.75,
                 "range": [
-                    10,
-                    1000
-                ]
-            },
-            "max_depth": {
-                "type": "int",
-                "default": 3,
-                "range": [
-                    3,
-                    10
+                    0,
+                    1
                 ]
             },
             "learning_rate": {
                 "type": "float",
-                "default": 0.1,
+                "default": 0.01,
                 "range": [
                     0,
                     1
-                ]
-            },
-            "gamma": {
-                "type": "float",
-                "default": 0.1,
-                "range": [
-                    0,
-                    1
-                ]
-            },
-            "min_child_weight": {
-                "type": "int",
-                "default": 1,
-                "range": [
-                    1,
-                    10
                 ]
             }
         }
