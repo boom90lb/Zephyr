@@ -1,5 +1,5 @@
 {
-    "name": "TemporalFusionTransformer",
+    "name": "zephyr_ml.primitives.temporalfusiontransformermodel.TemporalFusionTransformer",
     "contributors": [
         "Brendon Reperttang <boom90lb@mit.edu>"
     ],
@@ -10,9 +10,26 @@
         "subtype": "regressor"
     },
     "modalities": [],
-    "primitive": "pytorch_forecasting.models.temporal_fusion_transformer.TemporalFusionTransformer",
+    "primitive": "zephyr_ml.primitives.temporalfusiontransformermodel.TemporalFusionTransformer",
+    "fit": {
+        "method": "fit",
+        "args": [
+            {
+                "name": "train_dataloaders",
+                "type": "DataLoader"
+            },
+            {
+                "name": "val_dataloaders",
+                "type": "DataLoader"
+            },
+            {
+                "name": "model_path",
+                "type": "str"
+            }
+        ]
+    },
     "produce": {
-        "method": "from_dataset",
+        "method": "predict",
         "args": [
             {
                 "name": "dataset",
