@@ -1,0 +1,63 @@
+{
+    "name": "Trainer",
+    "contributors": [
+        "Brendon Reperttang <boom90lb@mit.edu>"
+    ],
+    "documentation": "https://lightning.ai/docs/pytorch/stable/common/trainer.html",
+    "description": "The Lightning Trainer does much more than just “training”. Under the hood, it handles all loop details for you.",
+    "classifiers": {
+        "type": "estimator",
+        "subtype": "forecasting"
+    },
+    "modalities": [],
+    "primitive": "pytorch_lightning.Trainer",
+    "fit": {
+        "method": "fit",
+        "args": [
+            {
+                "name": "model",
+                "keyword": "model",
+                "type": "DataFrame"
+            },
+            {
+                "name": "train_dataloader",
+                "keyword": "training",
+                "type": "DataLoader"
+            },
+            {
+                "name": "val_dataloader",
+                "keyword": "validation",
+                "type": "DataLoader"
+            }
+        ]
+    },
+    "produce": {
+        "method": "predict",
+        "args": [
+            {
+                "name": "dataloaders",
+                "keyword": "dataloaders",
+                "type": "DataLoader"
+            },
+            {
+                "name": "return_predictions",
+                "default": true,
+                "type": "bool"
+            }
+        ],
+        "output": [
+            {
+                "name": "y"
+            }
+        ]
+    },
+    "hyperparameters": {
+        "fixed": {
+            "max_epochs": {
+                "type": "int",
+                "default": 10,
+                "description": "Max number of epochs to run in training"
+            }
+        }
+    }
+}
