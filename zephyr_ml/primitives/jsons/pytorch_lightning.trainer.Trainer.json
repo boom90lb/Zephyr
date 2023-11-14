@@ -16,17 +16,14 @@
         "args": [
             {
                 "name": "model",
-                "keyword": "model",
                 "type": "DataFrame"
             },
             {
                 "name": "train_dataloader",
-                "keyword": "training",
                 "type": "DataLoader"
             },
             {
                 "name": "val_dataloader",
-                "keyword": "validation",
                 "type": "DataLoader"
             }
         ]
@@ -36,7 +33,6 @@
         "args": [
             {
                 "name": "dataloaders",
-                "keyword": "dataloaders",
                 "type": "DataLoader"
             },
             {

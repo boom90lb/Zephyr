@@ -1,7 +1,8 @@
 import torch
 import torch.utils.data
 import pytorch_forecasting as pytf
-import pytorch_lightning as lightning
+import lightning.pytorch as lightning
+from pytorch_forecasting.metrics import CrossEntropy
 import pandas as pd
 import numpy as np
 import csv
@@ -14,14 +15,15 @@ def get_column_names(data_path="."):
         
 def train(training_data, validation_data):
     model = pytf.TemporalFusionTransformer.from_dataset(training_data, **TFT_PARAMS)
-    training_loader = torch.utils.data.DataLoader(training_data, batch_size=128, shuffle=True)
-    validation_loader = torch.utils.data.DataLoader(validation_data, batch_size=128, shuffle=True)
+    # training_loader = torch.utils.data.DataLoader(training_data, batch_size=128, shuffle=True)
+    # validation_loader = torch.utils.data.DataLoader(validation_data, batch_size=128, shuffle=True)
+    training_loader = training_data.to_dataloader(train=True, batch_size=8)
+    validation_loader = validation_data.to_dataloader(train=False, batch_size=16)
 
     trainer = lightning.Trainer(**TRAINER_PARAMS)
     trainer.fit(model, training_loader, validation_loader)
 
     return trainer
-
 
 TRAIN_PCT = 0.7
 VAL_PCT = 0.85
@@ -31,16 +33,18 @@ if COLUMN_NAMES == None:
     COLUMN_NAMES = get_column_names(DATA_PATH)
 # Define parameters for TimeSeriesDataSet
 TSDS_PARAMS = {
-    "time_idx": "timestamp",
+    "time_idx": "time_idx",
     "target": "label",
-    "group_ids": ["turbine_id"],
-    "max_encoder_length": 256, 
-    "min_prediction_idx": 1024, 
-    "max_prediction_length": 128, 
-    "static_categoricals": COLUMN_NAMES[4], 
-    "time_varying_known_reals": COLUMN_NAMES[5:-1], 
-    "time_varying_unknown_reals": "time", 
-    "time_varying_unknown_categoricals": "label", 
+    "group_ids": [COLUMN_NAMES[4]],
+    "min_encoder_length": 1,
+    "max_encoder_length": 64,
+    "min_prediction_length": 1,
+    "max_prediction_length": 32,
+    "static_categoricals": [],
+    "static_reals": [],
+    "time_varying_known_reals": [],
+    "time_varying_unknown_reals": COLUMN_NAMES[5:-1] + ["label"],
+    "time_varying_unknown_categoricals": [],
     "allow_missing_timesteps": True,
 }
 # Define parameters for TemporalFusionTransformer
@@ -48,24 +52,17 @@ TFT_PARAMS = {
     "hidden_size": 16,
     "lstm_layers": 2,
     "dropout": 0.2,
-    "output_size": 1, 
+    "output_size": 1,
+    "loss": CrossEntropy(),
     "attention_head_size": 4,
-    "max_encoder_length": 256,
-    "static_categoricals": COLUMN_NAMES[4],
-    "static_reals": [], 
-    "time_varying_categoricals_encoder": [], 
-    "time_varying_categoricals_decoder": ["label"],
-    "time_varying_reals_encoder": COLUMN_NAMES[1][2:len(COLUMN_NAMES[1])-1],
-    "time_varying_reals_decoder": ["time"],
-    "categorical_groups": {}, 
-    "x_reals": COLUMN_NAMES[1][2:len(COLUMN_NAMES[1])-1],
-    "x_categoricals": ["label"],
+    "max_encoder_length": 128,
     "hidden_continuous_size": 8, 
-    "learning_rate": 0.001, 
+    "learning_rate": 0.005, 
     "log_interval": 10,
+    "optimizer": "Ranger",
     "log_val_interval": 1,  
     "reduce_on_plateau_patience": 4,
-    "monotone_constraints": {},
+    "monotone_constaints": {},
     "share_single_variable_networks": False,
     "causal_attention": True,
 }
@@ -75,17 +72,19 @@ TRAINER_PARAMS = {
     "accelerator": "auto",
 }
 
-
 if __name__ == "__main__":
     df = pd.read_csv(DATA_PATH)
-    df = df.set_index('timestamp')
+    df['time'] = pd.to_datetime(df['time'], format="%Y-%m-%d %H:%M:%S")
+    df = df.sort_values(by='time').reset_index(drop=True)
+    df['time_idx'] = range(len(df))
+    df['label'] = df['label'].astype(float)
 
-    training_cutoff = np.floor(len(df)*TRAIN_PCT)
-    validation_cutoff = np.floor(len(df)*VAL_PCT)
+    training_cutoff = np.floor(len(df)*TRAIN_PCT).item()
+    validation_cutoff = np.floor(len(df)*VAL_PCT).item()
 
-    training_data = pytf.TimeSeriesDataSet(df[lambda x: x.time_idx <= training_cutoff], **TSDS_PARAMS)
+    training_data = pytf.TimeSeriesDataSet(df.loc[df['time_idx'] <= training_cutoff], **TSDS_PARAMS)
 
-    validation_data = pytf.TimeSeriesDataSet(df[lambda x: x.time_idx <= validation_cutoff], **TSDS_PARAMS, min_prediction_idx=training_cutoff+1)
+    validation_data = pytf.TimeSeriesDataSet(df.loc[df['time_idx'] <= validation_cutoff], **TSDS_PARAMS, min_prediction_idx=training_cutoff+1)
 
     test_data = pytf.TimeSeriesDataSet(df, **TSDS_PARAMS, min_prediction_idx=validation_cutoff+1)
 
