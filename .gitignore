@@ -91,6 +91,7 @@ celerybeat-schedule
 .venv
 venv/
 ENV/
+tftmodel/
 
 # Spyder project settings
 .spyderproject

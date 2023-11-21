@@ -1,7 +1,7 @@
 {
     "name": "pytorch_forecasting.data.timeseries.TimeSeriesDataSet",
     "contributors": [
-        "Carles Sala <csala@csail.mit.edu>"
+        "Brendon Reperttang <boom90lb@mit.edu>"
     ],
     "documentation": "https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html",
     "description": "Two-dimensional size-mutable, potentially heterogeneous tabular data structure with labeled axes (rows and columns).",
